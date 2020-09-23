@@ -1,6 +1,6 @@
 use std::io::{BufRead, BufReader, Read};
-#[derive(Debug, PartialEq)]
-pub struct Stats {
+#[derive(Default, Debug, PartialEq)]
+pub struct Memory {
     pub total: u64,
     pub used: u64,
     pub buffers: u64,
@@ -16,33 +16,14 @@ pub struct Stats {
     pub mem_avaliable_enabled: bool,
 }
 
-impl Default for Stats {
-    fn default() -> Self {
-        Stats {
-            total: 0,
-            used: 0,
-            buffers: 0,
-            cached: 0,
-            free: 0,
-            available: 0,
-            active: 0,
-            inactive: 0,
-            swap_total: 0,
-            swap_used: 0,
-            swap_cached: 0,
-            swap_free: 0,
-            mem_avaliable_enabled: false,
-        }
-    }
-}
-pub fn get() -> std::io::Result<Stats> {
+pub fn get() -> std::io::Result<Memory> {
     let file = std::fs::File::open("/proc/meminfo")?;
     collect_memory_stats(file)
 }
 
-pub fn collect_memory_stats<R: Read>(buf: R) -> std::io::Result<Stats> {
+pub fn collect_memory_stats<R: Read>(buf: R) -> std::io::Result<Memory> {
     let reader = BufReader::new(buf);
-    let mut stats = Stats::default();
+    let mut memory = Memory::default();
 
     for line in reader.lines() {
         if line.is_err() {
@@ -58,32 +39,32 @@ pub fn collect_memory_stats<R: Read>(buf: R) -> std::io::Result<Stats> {
         if let Ok(val) = val {
             let val = val * 1024;
             match key {
-                "MemTotal" => stats.total = val,
-                "MemFree" => stats.free = val,
+                "MemTotal" => memory.total = val,
+                "MemFree" => memory.free = val,
                 "MemAvailable" => {
-                    stats.available = val;
-                    stats.mem_avaliable_enabled = true
+                    memory.available = val;
+                    memory.mem_avaliable_enabled = true
                 }
-                "Buffers" => stats.buffers = val,
-                "Cached" => stats.cached = val,
-                "Active" => stats.active = val,
-                "Inactive" => stats.inactive = val,
-                "SwapCached" => stats.swap_cached = val,
-                "SwapTotal" => stats.swap_total = val,
-                "SwapFree" => stats.swap_free = val,
+                "Buffers" => memory.buffers = val,
+                "Cached" => memory.cached = val,
+                "Active" => memory.active = val,
+                "Inactive" => memory.inactive = val,
+                "SwapCached" => memory.swap_cached = val,
+                "SwapTotal" => memory.swap_total = val,
+                "SwapFree" => memory.swap_free = val,
                 _ => (),
             }
         }
     }
 
-    stats.swap_used = stats.swap_total - stats.swap_free;
-    stats.used = if stats.mem_avaliable_enabled {
-        stats.total - stats.available
+    memory.swap_used = memory.swap_total - memory.swap_free;
+    memory.used = if memory.mem_avaliable_enabled {
+        memory.total - memory.available
     } else {
-        stats.total - stats.free - stats.buffers - stats.cached
+        memory.total - memory.free - memory.buffers - memory.cached
     };
 
-    Ok(stats)
+    Ok(memory)
 }
 
 #[test]
@@ -138,7 +119,7 @@ fn collect_memory_stats_mem_avaliable_disabled() {
     .as_bytes();
     let r = collect_memory_stats(buf);
     assert!(r.is_ok());
-    let expected = Stats {
+    let expected = Memory {
         total: (1929620 * 1024),
         used: (1298444 * 1024),
         buffers: (81744 * 1024),
@@ -209,7 +190,7 @@ fn collect_memory_stats_mem_avaliable_enabled() {
     .as_bytes();
     let r = collect_memory_stats(buf);
     assert!(r.is_ok());
-    let expected = Stats {
+    let expected = Memory {
         total: (1929620 * 1024),
         used: (1396488 * 1024),
         buffers: (81744 * 1024),
