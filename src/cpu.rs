@@ -81,7 +81,6 @@ pub fn collect_cpu_stats<R: Read>(file: R) -> std::io::Result<Stat> {
     stat.total -= stat.guest_nice;
 
     for line in reader.lines() {
-        dbg!(&line);
         if line.unwrap().starts_with("cpu") {
             stat.cpu_count += 1;
         }
