@@ -1,7 +1,7 @@
 use std::io::{BufRead, BufReader, Read};
 
 #[derive(Default, Debug, PartialEq)]
-pub struct Stat {
+pub struct CPU {
     pub user: u64,
     pub nice: u64,
     pub system: u64,
@@ -17,12 +17,12 @@ pub struct Stat {
     pub stat_count: i64,
 }
 
-pub fn get() -> std::io::Result<Stat> {
+pub fn get() -> std::io::Result<CPU> {
     let file = std::fs::File::open("/proc/stat")?;
     collect_cpu_stats(file)
 }
 
-pub fn collect_cpu_stats<R: Read>(file: R) -> std::io::Result<Stat> {
+pub fn collect_cpu_stats<R: Read>(file: R) -> std::io::Result<CPU> {
     let mut reader = BufReader::new(file);
     let mut line = String::new();
     reader.read_line(&mut line)?;
@@ -43,7 +43,7 @@ pub fn collect_cpu_stats<R: Read>(file: R) -> std::io::Result<Stat> {
         .collect();
 
     // TODO: assignment by accessing the slice directly is unsafe.
-    let mut stat = Stat::default();
+    let mut stat = CPU::default();
     stat.user = vals[0];
     stat.nice = vals[1];
     stat.system = vals[2];
@@ -85,7 +85,7 @@ softirq 10624366 42 5280893 11772 27757 826862 2 24721 2326791 28519 2097007".as
     assert!(r.is_ok());
     let stats = r.unwrap();
 
-    let expected = Stat {
+    let expected = CPU {
         user: 1415984,
         nice: 38486,
         system: 429451,
