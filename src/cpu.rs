@@ -1,6 +1,6 @@
 use std::io::{BufRead, BufReader, Read};
 
-#[derive(Debug, PartialEq)]
+#[derive(Default, Debug, PartialEq)]
 pub struct Stat {
     pub user: u64,
     pub nice: u64,
@@ -15,26 +15,6 @@ pub struct Stat {
     pub total: u64,
     pub cpu_count: i64,
     pub stat_count: i64,
-}
-
-impl Default for Stat {
-    fn default() -> Self {
-        Self {
-            user: 0,
-            nice: 0,
-            system: 0,
-            idle: 0,
-            iowait: 0,
-            irq: 0,
-            softirq: 0,
-            steal: 0,
-            guest: 0,
-            guest_nice: 0,
-            total: 0,
-            cpu_count: 0,
-            stat_count: 0,
-        }
-    }
 }
 
 pub fn get() -> std::io::Result<Stat> {

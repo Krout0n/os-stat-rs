@@ -1,5 +1,5 @@
 use std::io::{BufRead, BufReader, Read};
-#[derive(Debug, PartialEq)]
+#[derive(Default, Debug, PartialEq)]
 pub struct Stats {
     pub total: u64,
     pub used: u64,
@@ -16,25 +16,6 @@ pub struct Stats {
     pub mem_avaliable_enabled: bool,
 }
 
-impl Default for Stats {
-    fn default() -> Self {
-        Stats {
-            total: 0,
-            used: 0,
-            buffers: 0,
-            cached: 0,
-            free: 0,
-            available: 0,
-            active: 0,
-            inactive: 0,
-            swap_total: 0,
-            swap_used: 0,
-            swap_cached: 0,
-            swap_free: 0,
-            mem_avaliable_enabled: false,
-        }
-    }
-}
 pub fn get() -> std::io::Result<Stats> {
     let file = std::fs::File::open("/proc/meminfo")?;
     collect_memory_stats(file)
