@@ -14,6 +14,13 @@ pub fn get() -> std::io::Result<Vec<Disk>> {
 
 
 pub fn collect_disk_stats<R: Read>(buf: R) -> std::io::Result<Vec<Disk>> {
+    let reader = BufReader::new(buf);
+    let mut disks = vec![];
+    for line in reader.lines() {
+        if line.is_err() {
+            unimplemented!()
+        }
+    }
     todo!()
 }
 #[test]
