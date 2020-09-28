@@ -19,10 +19,15 @@ fn collect_network_stats<R: Read>(file: R) -> std::io::Result<Vec<Network>> {
         .skip(2)
         .map(|line| {
             let line = line.unwrap();
-            let columns: Vec<&str> = line.split(":").collect();
+            let columns: Vec<_> = line.split(":").collect();
+            if columns.len() < 2 {
+                unimplemented!();
+            }
             let name = columns[0].trim_start();
-            dbg!(name);
-            let columns: Vec<&str> = columns[1].split_ascii_whitespace().collect();
+            let columns: Vec<_> = columns[1].split_ascii_whitespace().collect();
+            if columns.len() < 9 {
+                unimplemented!();
+            }
             Network {
                 name: name.to_owned(),
                 rx_bytes: columns[0].parse::<u64>().unwrap(),
