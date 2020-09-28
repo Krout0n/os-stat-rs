@@ -3,3 +3,4 @@
 pub mod cpu;
 pub mod loadavg;
 pub mod memory;
+pub mod disk;
