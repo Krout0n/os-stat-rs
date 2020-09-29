@@ -2,9 +2,9 @@ use libc::getloadavg;
 
 #[derive(Default, Debug, PartialEq)]
 pub struct LoadAvg {
-    loadavg1: f64,
-    loadavg5: f64,
-    loadavg16: f64,
+    pub loadavg1: f64,
+    pub loadavg5: f64,
+    pub loadavg16: f64,
 }
 
 pub fn get() -> LoadAvg {
