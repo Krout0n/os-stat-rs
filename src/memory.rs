@@ -14,7 +14,7 @@ pub struct Memory {
     pub swap_used: u64,
     pub swap_cached: u64,
     pub swap_free: u64,
-    pub mem_avaliable_enabled: bool,
+    pub mem_available_enabled: bool,
 }
 
 pub fn get() -> std::io::Result<Memory> {
@@ -59,7 +59,7 @@ fn collect_memory_stats<R: Read>(buf: R) -> std::io::Result<Memory> {
     }
 
     memory.swap_used = memory.swap_total - memory.swap_free;
-    memory.used = if memory.mem_avaliable_enabled {
+    memory.used = if memory.mem_available_enabled {
         memory.total - memory.available
     } else {
         memory.total - memory.free - memory.buffers - memory.cached
@@ -130,7 +130,7 @@ fn collect_memory_stats_mem_avaliable_disabled() {
         swap_used: (2432 * 1024),
         swap_cached: (504 * 1024),
         swap_free: (1957500 * 1024),
-        mem_avaliable_enabled: false,
+        mem_available_enabled: false,
         ..Default::default()
     };
     let r = collect_memory_stats(buf);
@@ -202,7 +202,7 @@ fn collect_memory_stats_mem_avaliable_enabled() {
         swap_used: (2432 * 1024),
         swap_cached: (504 * 1024),
         swap_free: (1957500 * 1024),
-        mem_avaliable_enabled: true,
+        mem_available_enabled: true,
         ..Default::default()
     };
     let r = collect_memory_stats(buf);
