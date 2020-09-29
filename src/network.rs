@@ -12,8 +12,8 @@ pub fn get() -> std::io::Result<Vec<Network>> {
     collect_network_stats(file)
 }
 
-fn collect_network_stats<R: Read>(file: R) -> std::io::Result<Vec<Network>> {
-    let reader = BufReader::new(file);
+fn collect_network_stats<R: Read>(buf: R) -> std::io::Result<Vec<Network>> {
+    let reader = BufReader::new(buf);
     let networks = reader
         .lines()
         .skip(2)
@@ -66,6 +66,5 @@ fn test_collect_network_stats() {
     ];
     let r = collect_network_stats(buf);
     assert!(r.is_ok());
-    let stats = r.unwrap();
-    assert_eq!(stats, expected);
+    assert_eq!(r.unwrap(), expected);
 }

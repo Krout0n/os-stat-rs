@@ -61,6 +61,5 @@ tmpfs                                   517224        4  517220         1% /dev/
     }];
     let r = collect_filesystem_stats(output);
     assert!(r.is_ok());
-    let stats = r.unwrap();
-    assert_eq!(stats, expected);
+    assert_eq!(r.unwrap(), expected);
 }
