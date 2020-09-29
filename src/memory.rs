@@ -43,7 +43,7 @@ pub fn collect_memory_stats<R: Read>(buf: R) -> std::io::Result<Memory> {
                 "MemFree" => memory.free = val,
                 "MemAvailable" => {
                     memory.available = val;
-                    memory.mem_avaliable_enabled = true
+                    memory.mem_available_enabled = true
                 }
                 "Buffers" => memory.buffers = val,
                 "Cached" => memory.cached = val,
