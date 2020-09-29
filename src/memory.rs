@@ -1,4 +1,5 @@
 use std::io::{BufRead, BufReader, Read};
+
 #[derive(Default, Debug, PartialEq)]
 pub struct Memory {
     pub total: u64,
@@ -21,7 +22,7 @@ pub fn get() -> std::io::Result<Memory> {
     collect_memory_stats(file)
 }
 
-pub fn collect_memory_stats<R: Read>(buf: R) -> std::io::Result<Memory> {
+fn collect_memory_stats<R: Read>(buf: R) -> std::io::Result<Memory> {
     let reader = BufReader::new(buf);
     let mut memory = Memory::default();
 
@@ -117,8 +118,6 @@ fn collect_memory_stats_mem_avaliable_disabled() {
     DirectMap2M:      888832 kB
 "
     .as_bytes();
-    let r = collect_memory_stats(buf);
-    assert!(r.is_ok());
     let expected = Memory {
         total: (1929620 * 1024),
         used: (1298444 * 1024),
@@ -134,6 +133,8 @@ fn collect_memory_stats_mem_avaliable_disabled() {
         mem_avaliable_enabled: false,
         ..Default::default()
     };
+    let r = collect_memory_stats(buf);
+    assert!(r.is_ok());
     assert_eq!(r.unwrap(), expected);
 }
 
@@ -188,8 +189,6 @@ fn collect_memory_stats_mem_avaliable_enabled() {
     DirectMap2M:      888832 kB
 "
     .as_bytes();
-    let r = collect_memory_stats(buf);
-    assert!(r.is_ok());
     let expected = Memory {
         total: (1929620 * 1024),
         used: (1396488 * 1024),
@@ -206,5 +205,7 @@ fn collect_memory_stats_mem_avaliable_enabled() {
         mem_avaliable_enabled: true,
         ..Default::default()
     };
+    let r = collect_memory_stats(buf);
+    assert!(r.is_ok());
     assert_eq!(r.unwrap(), expected);
 }

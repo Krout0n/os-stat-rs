@@ -22,8 +22,8 @@ pub fn get() -> std::io::Result<CPU> {
     collect_cpu_stats(file)
 }
 
-pub fn collect_cpu_stats<R: Read>(file: R) -> std::io::Result<CPU> {
-    let mut reader = BufReader::new(file);
+fn collect_cpu_stats<R: Read>(buf: R) -> std::io::Result<CPU> {
+    let mut reader = BufReader::new(buf);
     let mut line = String::new();
     reader.read_line(&mut line)?;
 
@@ -82,9 +82,6 @@ processes 28087
 procs_running 8
 procs_blocked 0
 softirq 10624366 42 5280893 11772 27757 826862 2 24721 2326791 28519 2097007".as_bytes());
-    assert!(r.is_ok());
-    let stats = r.unwrap();
-
     let expected = CPU {
         user: 1415984,
         nice: 38486,
@@ -100,6 +97,6 @@ softirq 10624366 42 5280893 11772 27757 826862 2 24721 2326791 28519 2097007".as
         cpu_count: 2,
         stat_count: 10,
     };
-
-    assert_eq!(stats, expected);
+    assert!(r.is_ok());
+    assert_eq!(r.unwrap(), expected);
 }

@@ -35,6 +35,7 @@ pub fn collect_disk_stats<R: Read>(buf: R) -> std::io::Result<Vec<Disk>> {
     }
     Ok(disks)
 }
+
 #[test]
 fn test_collect_disk_stats() {
     let buf = " 202       1 xvda1 750193 3037 28116978 368712 16600606 7233846 424712632 23987908 0 2355636 24345740
@@ -84,6 +85,5 @@ fn test_collect_disk_stats() {
     ];
     let r = collect_disk_stats(buf);
     assert!(r.is_ok());
-    let stats = r.unwrap();
-    assert_eq!(stats, expected);
+    assert_eq!(r.unwrap(), expected);
 }
