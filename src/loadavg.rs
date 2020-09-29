@@ -4,7 +4,7 @@ use libc::getloadavg;
 pub struct LoadAvg {
     pub loadavg1: f64,
     pub loadavg5: f64,
-    pub loadavg16: f64,
+    pub loadavg15: f64,
 }
 
 pub fn get() -> LoadAvg {
@@ -16,6 +16,6 @@ pub fn get() -> LoadAvg {
     LoadAvg {
         loadavg1: loadavgs[0],
         loadavg5: loadavgs[1],
-        loadavg16: loadavgs[2],
+        loadavg15: loadavgs[2],
     }
 }
