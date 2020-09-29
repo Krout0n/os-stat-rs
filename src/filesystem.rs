@@ -26,6 +26,7 @@ fn collect_filesystem_stats<R: Read>(buf: R) -> std::io::Result<Vec<FileSystem>>
             line.starts_with("/dev/")
                 && !line.starts_with("/dev/mapper/docker-")
                 && !line.starts_with("/dev/dm-")
+                && !line.contains("devicemapper/mnt")
         })
         .map(|line| {
             let columns: Vec<_> = line.split_ascii_whitespace().collect();
