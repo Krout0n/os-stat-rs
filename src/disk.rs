@@ -12,7 +12,6 @@ pub fn get() -> std::io::Result<Vec<Disk>> {
     collect_disk_stats(file)
 }
 
-
 pub fn collect_disk_stats<R: Read>(buf: R) -> std::io::Result<Vec<Disk>> {
     let reader = BufReader::new(buf);
     let mut disks: Vec<Disk> = vec![];
@@ -28,7 +27,7 @@ pub fn collect_disk_stats<R: Read>(buf: R) -> std::io::Result<Vec<Disk>> {
         let name = fields[2].to_owned();
         let reads_completed = fields[3].parse::<u64>().unwrap();
         let writes_completed = fields[7].parse::<u64>().unwrap();
-        disks.push(Disk{
+        disks.push(Disk {
             name,
             reads_completed,
             writes_completed,
