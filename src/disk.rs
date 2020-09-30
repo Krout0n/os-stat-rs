@@ -7,33 +7,35 @@ pub struct Disk {
     pub writes_completed: u64,
 }
 
-pub fn get() -> std::io::Result<Vec<Disk>> {
-    let file = std::fs::File::open("/proc/diskstats")?;
-    collect_disk_stats(file)
-}
-
-pub fn collect_disk_stats<R: Read>(buf: R) -> std::io::Result<Vec<Disk>> {
-    let reader = BufReader::new(buf);
-    let mut disks: Vec<Disk> = vec![];
-    for line in reader.lines() {
-        if line.is_err() {
-            unimplemented!()
-        }
-        let line = line.unwrap();
-        let fields: Vec<_> = line.split_ascii_whitespace().collect();
-        if fields.len() < 14 {
-            continue;
-        }
-        let name = fields[2].to_owned();
-        let reads_completed = fields[3].parse::<u64>().unwrap();
-        let writes_completed = fields[7].parse::<u64>().unwrap();
-        disks.push(Disk {
-            name,
-            reads_completed,
-            writes_completed,
-        })
+impl Disk {
+    pub fn get() -> std::io::Result<Vec<Disk>> {
+        let file = std::fs::File::open("/proc/diskstats")?;
+        Self::collect_disk_stats(file)
     }
-    Ok(disks)
+
+    fn collect_disk_stats<R: Read>(buf: R) -> std::io::Result<Vec<Disk>> {
+        let reader = BufReader::new(buf);
+        let mut disks: Vec<Disk> = vec![];
+        for line in reader.lines() {
+            if line.is_err() {
+                unimplemented!()
+            }
+            let line = line.unwrap();
+            let fields: Vec<_> = line.split_ascii_whitespace().collect();
+            if fields.len() < 14 {
+                continue;
+            }
+            let name = fields[2].to_owned();
+            let reads_completed = fields[3].parse::<u64>().unwrap();
+            let writes_completed = fields[7].parse::<u64>().unwrap();
+            disks.push(Disk {
+                name,
+                reads_completed,
+                writes_completed,
+            })
+        }
+        Ok(disks)
+    }
 }
 
 #[test]
@@ -83,7 +85,7 @@ fn test_collect_disk_stats() {
             writes_completed: 30822403,
         },
     ];
-    let r = collect_disk_stats(buf);
+    let r = Disk::collect_disk_stats(buf);
     assert!(r.is_ok());
     assert_eq!(r.unwrap(), expected);
 }

@@ -8,41 +8,43 @@ pub struct FileSystem {
     pub size: u64,
 }
 
-pub fn get() -> std::io::Result<Vec<FileSystem>> {
-    let output = Command::new("df")
-        .arg("-Pkl")
-        .output()
-        .expect("failed to run");
-    collect_filesystem_stats(std::io::Cursor::new(output.stdout))
-}
+impl FileSystem {
+    pub fn get() -> std::io::Result<Vec<FileSystem>> {
+        let output = Command::new("df")
+            .arg("-Pkl")
+            .output()
+            .expect("failed to run");
+        Self::collect_filesystem_stats(std::io::Cursor::new(output.stdout))
+    }
 
-fn collect_filesystem_stats<R: Read>(buf: R) -> std::io::Result<Vec<FileSystem>> {
-    let reader = BufReader::new(buf);
-    let file_systems = reader
-        .lines()
-        .skip(1)
-        .map(|line| line.unwrap())
-        .filter(|line| {
-            line.starts_with("/dev/")
-                && !line.starts_with("/dev/mapper/docker-")
-                && !line.starts_with("/dev/dm-")
-                && !line.contains("devicemapper/mnt")
-        })
-        .map(|line| {
-            let columns: Vec<_> = line.split_ascii_whitespace().collect();
-            if columns.len() < 4 {
-                unimplemented!()
-            }
-            let used_kb = columns[2].parse::<u64>().unwrap();
-            let available_kb = columns[3].parse::<u64>().unwrap();
-            FileSystem {
-                name: columns[0].trim_start_matches("/dev/").to_owned(),
-                used: used_kb * 1024,
-                size: (used_kb + available_kb) * 1024,
-            }
-        })
-        .collect();
-    Ok(file_systems)
+    fn collect_filesystem_stats<R: Read>(buf: R) -> std::io::Result<Vec<FileSystem>> {
+        let reader = BufReader::new(buf);
+        let file_systems = reader
+            .lines()
+            .skip(1)
+            .map(|line| line.unwrap())
+            .filter(|line| {
+                line.starts_with("/dev/")
+                    && !line.starts_with("/dev/mapper/docker-")
+                    && !line.starts_with("/dev/dm-")
+                    && !line.contains("devicemapper/mnt")
+            })
+            .map(|line| {
+                let columns: Vec<_> = line.split_ascii_whitespace().collect();
+                if columns.len() < 4 {
+                    unimplemented!()
+                }
+                let used_kb = columns[2].parse::<u64>().unwrap();
+                let available_kb = columns[3].parse::<u64>().unwrap();
+                FileSystem {
+                    name: columns[0].trim_start_matches("/dev/").to_owned(),
+                    used: used_kb * 1024,
+                    size: (used_kb + available_kb) * 1024,
+                }
+            })
+            .collect();
+        Ok(file_systems)
+    }
 }
 
 #[test]
@@ -59,7 +61,7 @@ tmpfs                                   517224        4  517220         1% /dev/
         used: 17272999936,
         size: 19181502464,
     }];
-    let r = collect_filesystem_stats(output);
+    let r = FileSystem::collect_filesystem_stats(output);
     assert!(r.is_ok());
     assert_eq!(r.unwrap(), expected);
 }

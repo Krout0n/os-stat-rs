@@ -7,36 +7,38 @@ pub struct Network {
     pub tx_bytes: u64,
 }
 
-pub fn get() -> std::io::Result<Vec<Network>> {
-    let file = std::fs::File::open("/proc/net/dev")?;
-    collect_network_stats(file)
-}
+impl Network {
+    pub fn get() -> std::io::Result<Vec<Self>> {
+        let file = std::fs::File::open("/proc/net/dev")?;
+        Self::collect_network_stats(file)
+    }
 
-fn collect_network_stats<R: Read>(buf: R) -> std::io::Result<Vec<Network>> {
-    let reader = BufReader::new(buf);
-    let networks = reader
-        .lines()
-        .skip(2)
-        .map(|line| {
-            let line = line.unwrap();
-            let columns: Vec<_> = line.split(":").collect();
-            if columns.len() < 2 {
-                unimplemented!();
-            }
-            let name = columns[0].trim_start();
-            let columns: Vec<_> = columns[1].split_ascii_whitespace().collect();
-            if columns.len() < 9 {
-                unimplemented!();
-            }
-            Network {
-                name: name.to_owned(),
-                rx_bytes: columns[0].parse::<u64>().unwrap(),
-                tx_bytes: columns[8].parse::<u64>().unwrap(),
-            }
-        })
-        .filter(|network| network.name != "lo")
-        .collect();
-    Ok(networks)
+    fn collect_network_stats<R: Read>(buf: R) -> std::io::Result<Vec<Self>> {
+        let reader = BufReader::new(buf);
+        let networks = reader
+            .lines()
+            .skip(2)
+            .map(|line| {
+                let line = line.unwrap();
+                let columns: Vec<_> = line.split(":").collect();
+                if columns.len() < 2 {
+                    unimplemented!();
+                }
+                let name = columns[0].trim_start();
+                let columns: Vec<_> = columns[1].split_ascii_whitespace().collect();
+                if columns.len() < 9 {
+                    unimplemented!();
+                }
+                Network {
+                    name: name.to_owned(),
+                    rx_bytes: columns[0].parse::<u64>().unwrap(),
+                    tx_bytes: columns[8].parse::<u64>().unwrap(),
+                }
+            })
+            .filter(|network| network.name != "lo")
+            .collect();
+        Ok(networks)
+    }
 }
 
 #[test]
@@ -64,7 +66,7 @@ fn test_collect_network_stats() {
             tx_bytes: 93127469,
         },
     ];
-    let r = collect_network_stats(buf);
+    let r = Network::collect_network_stats(buf);
     assert!(r.is_ok());
     assert_eq!(r.unwrap(), expected);
 }
