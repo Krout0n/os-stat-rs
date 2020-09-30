@@ -3,7 +3,7 @@ This is a library to get system metrics like cpu load and memory usage, inspired
 
 ## Cargo.toml
 ```toml
-os_stat = "0.1"
+os_stat = "0.1.0"
 ```
 
 ## Example
