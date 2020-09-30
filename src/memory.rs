@@ -32,11 +32,11 @@ impl Memory {
                 unimplemented!()
             }
             let line = line.unwrap();
-            if !line.contains(":") {
+            if !line.contains(':') {
                 continue;
             }
             let line: Vec<_> = line.split_ascii_whitespace().collect();
-            let key = line[0].trim_end_matches(":");
+            let key = line[0].trim_end_matches(':');
             let val = line[1].parse::<u64>();
             if let Ok(val) = val {
                 let val = val * 1024;
