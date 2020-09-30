@@ -1,4 +1,5 @@
 on:
+  pull_request: {}
   push:
     paths:
       - "**"
@@ -19,8 +20,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
-          # TODO
-          # args: -- -D warnings
+          args: -- -D warnings
       - uses: actions-rs/cargo@v1
         with:
           command: test

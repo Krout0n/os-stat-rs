@@ -20,7 +20,7 @@ impl Network {
             .skip(2)
             .map(|line| {
                 let line = line.unwrap();
-                let columns: Vec<_> = line.split(":").collect();
+                let columns: Vec<_> = line.split(':').collect();
                 if columns.len() < 2 {
                     unimplemented!();
                 }

@@ -35,10 +35,9 @@ impl CPU {
         let vals: Vec<_> = iterator
             .map(|val| {
                 let val = val.parse::<u64>();
-                if val.is_ok() {
-                    val.unwrap()
-                } else {
-                    unimplemented!()
+                match val {
+                    Ok(val) => val,
+                    Err(_) => unimplemented!(),
                 }
             })
             .collect();
