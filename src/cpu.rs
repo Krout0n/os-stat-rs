@@ -17,61 +17,63 @@ pub struct CPU {
     pub stat_count: i64,
 }
 
-pub fn get() -> std::io::Result<CPU> {
-    let file = std::fs::File::open("/proc/stat")?;
-    collect_cpu_stats(file)
-}
-
-fn collect_cpu_stats<R: Read>(buf: R) -> std::io::Result<CPU> {
-    let mut reader = BufReader::new(buf);
-    let mut line = String::new();
-    reader.read_line(&mut line)?;
-
-    // the first token is "cpu", so skip it
-    let mut iterator = line.split_ascii_whitespace();
-    iterator.next();
-
-    let vals: Vec<_> = iterator
-        .map(|val| {
-            let val = val.parse::<u64>();
-            if val.is_ok() {
-                val.unwrap()
-            } else {
-                unimplemented!()
-            }
-        })
-        .collect();
-
-    // TODO: assignment by accessing the slice directly is unsafe.
-    let mut stat = CPU::default();
-    stat.user = vals[0];
-    stat.nice = vals[1];
-    stat.system = vals[2];
-    stat.idle = vals[3];
-    stat.iowait = vals[4];
-    stat.irq = vals[5];
-    stat.softirq = vals[6];
-    stat.steal = vals[7];
-    stat.guest = vals[8];
-    stat.guest_nice = vals[9];
-
-    stat.stat_count = vals.len() as i64;
-    stat.total = vals.into_iter().fold_first(|acc, val| acc + val).unwrap();
-    stat.total -= stat.guest;
-    stat.total -= stat.guest_nice;
-
-    for line in reader.lines() {
-        if line.unwrap().starts_with("cpu") {
-            stat.cpu_count += 1;
-        }
+impl CPU {
+    pub fn get() -> std::io::Result<Self> {
+        let file = std::fs::File::open("/proc/stat")?;
+        Self::collect_cpu_stats(file)
     }
 
-    Ok(stat)
+    fn collect_cpu_stats<R: Read>(buf: R) -> std::io::Result<Self> {
+        let mut reader = BufReader::new(buf);
+        let mut line = String::new();
+        reader.read_line(&mut line)?;
+
+        // the first token is "cpu", so skip it
+        let mut iterator = line.split_ascii_whitespace();
+        iterator.next();
+
+        let vals: Vec<_> = iterator
+            .map(|val| {
+                let val = val.parse::<u64>();
+                if val.is_ok() {
+                    val.unwrap()
+                } else {
+                    unimplemented!()
+                }
+            })
+            .collect();
+
+        // TODO: assignment by accessing the slice directly is unsafe.
+        let mut stat = CPU::default();
+        stat.user = vals[0];
+        stat.nice = vals[1];
+        stat.system = vals[2];
+        stat.idle = vals[3];
+        stat.iowait = vals[4];
+        stat.irq = vals[5];
+        stat.softirq = vals[6];
+        stat.steal = vals[7];
+        stat.guest = vals[8];
+        stat.guest_nice = vals[9];
+
+        stat.stat_count = vals.len() as i64;
+        stat.total = vals.into_iter().fold_first(|acc, val| acc + val).unwrap();
+        stat.total -= stat.guest;
+        stat.total -= stat.guest_nice;
+
+        for line in reader.lines() {
+            if line.unwrap().starts_with("cpu") {
+                stat.cpu_count += 1;
+            }
+        }
+
+        Ok(stat)
+    }
 }
 
 #[test]
 fn test_collect_cpu_stats() {
-    let r = collect_cpu_stats("cpu  1415984 38486 429451 2500643 10585 157 2372 0 0 0
+    let r = CPU::collect_cpu_stats("cpu  1415984 38486 429451 2500643 10585 157 2372 0 0 0
 cpu0 708614 19410 217184 2188812 9733 144 808 0 0 0
 cpu1 707370 19076 212266 311830 851 12 1564 0 0 0
 intr 40269386 11401108 2407 0 0 0 0 0 0 1 2601 0 0 914 0 0 0 360 0 0 21183 0 54 0 16365 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 839980 2127556 1919962 429 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0

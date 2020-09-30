@@ -17,55 +17,57 @@ pub struct Memory {
     pub mem_available_enabled: bool,
 }
 
-pub fn get() -> std::io::Result<Memory> {
-    let file = std::fs::File::open("/proc/meminfo")?;
-    collect_memory_stats(file)
-}
-
-fn collect_memory_stats<R: Read>(buf: R) -> std::io::Result<Memory> {
-    let reader = BufReader::new(buf);
-    let mut memory = Memory::default();
-
-    for line in reader.lines() {
-        if line.is_err() {
-            unimplemented!()
-        }
-        let line = line.unwrap();
-        if !line.contains(":") {
-            continue;
-        }
-        let line: Vec<_> = line.split_ascii_whitespace().collect();
-        let key = line[0].trim_end_matches(":");
-        let val = line[1].parse::<u64>();
-        if let Ok(val) = val {
-            let val = val * 1024;
-            match key {
-                "MemTotal" => memory.total = val,
-                "MemFree" => memory.free = val,
-                "MemAvailable" => {
-                    memory.available = val;
-                    memory.mem_available_enabled = true
-                }
-                "Buffers" => memory.buffers = val,
-                "Cached" => memory.cached = val,
-                "Active" => memory.active = val,
-                "Inactive" => memory.inactive = val,
-                "SwapCached" => memory.swap_cached = val,
-                "SwapTotal" => memory.swap_total = val,
-                "SwapFree" => memory.swap_free = val,
-                _ => (),
-            }
-        }
+impl Memory {
+    pub fn get() -> std::io::Result<Self> {
+        let file = std::fs::File::open("/proc/meminfo")?;
+        Self::collect_memory_stats(file)
     }
 
-    memory.swap_used = memory.swap_total - memory.swap_free;
-    memory.used = if memory.mem_available_enabled {
-        memory.total - memory.available
-    } else {
-        memory.total - memory.free - memory.buffers - memory.cached
-    };
+    fn collect_memory_stats<R: Read>(buf: R) -> std::io::Result<Self> {
+        let reader = BufReader::new(buf);
+        let mut memory = Memory::default();
 
-    Ok(memory)
+        for line in reader.lines() {
+            if line.is_err() {
+                unimplemented!()
+            }
+            let line = line.unwrap();
+            if !line.contains(":") {
+                continue;
+            }
+            let line: Vec<_> = line.split_ascii_whitespace().collect();
+            let key = line[0].trim_end_matches(":");
+            let val = line[1].parse::<u64>();
+            if let Ok(val) = val {
+                let val = val * 1024;
+                match key {
+                    "MemTotal" => memory.total = val,
+                    "MemFree" => memory.free = val,
+                    "MemAvailable" => {
+                        memory.available = val;
+                        memory.mem_available_enabled = true
+                    }
+                    "Buffers" => memory.buffers = val,
+                    "Cached" => memory.cached = val,
+                    "Active" => memory.active = val,
+                    "Inactive" => memory.inactive = val,
+                    "SwapCached" => memory.swap_cached = val,
+                    "SwapTotal" => memory.swap_total = val,
+                    "SwapFree" => memory.swap_free = val,
+                    _ => (),
+                }
+            }
+        }
+
+        memory.swap_used = memory.swap_total - memory.swap_free;
+        memory.used = if memory.mem_available_enabled {
+            memory.total - memory.available
+        } else {
+            memory.total - memory.free - memory.buffers - memory.cached
+        };
+
+        Ok(memory)
+    }
 }
 
 #[test]
@@ -133,7 +135,7 @@ fn collect_memory_stats_mem_avaliable_disabled() {
         mem_available_enabled: false,
         ..Default::default()
     };
-    let r = collect_memory_stats(buf);
+    let r = Memory::collect_memory_stats(buf);
     assert!(r.is_ok());
     assert_eq!(r.unwrap(), expected);
 }
@@ -205,7 +207,7 @@ fn collect_memory_stats_mem_avaliable_enabled() {
         mem_available_enabled: true,
         ..Default::default()
     };
-    let r = collect_memory_stats(buf);
+    let r = Memory::collect_memory_stats(buf);
     assert!(r.is_ok());
     assert_eq!(r.unwrap(), expected);
 }
