@@ -7,7 +7,7 @@ os_stat = "0.1.0"
 ```
 
 ## Example
-```
+```rust
 extern crate os_stat;
 
 fn main() {
